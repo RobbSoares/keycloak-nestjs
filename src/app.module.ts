@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
   AuthGuard,
   KeycloakConnectModule,
@@ -13,6 +14,7 @@ import { KeycloakModule } from 'src/services/keycloak/keycloak.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     KeycloakConnectModule.registerAsync({
       useExisting: KeycloakConfigService,
       imports: [ConfigModule],
