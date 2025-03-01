@@ -8,6 +8,8 @@ import {
 } from 'nest-keycloak-connect';
 import { ConfigModule } from 'src/config/config.module';
 import { KeycloakConfigService } from 'src/config/keycloak-config.service';
+import { AuthModule } from 'src/modules/auth/auth.module';
+import { KeycloakModule } from 'src/services/keycloak/keycloak.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { KeycloakConfigService } from 'src/config/keycloak-config.service';
       imports: [ConfigModule],
     }),
     AppModule,
+    AuthModule,
+    KeycloakModule,
   ],
   providers: [
     {
