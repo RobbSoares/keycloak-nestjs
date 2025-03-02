@@ -26,7 +26,9 @@ export class KeycloakService {
           password: process.env.KEYCLOAK_PASSWORD,
         },
         {
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
         },
       );
 
@@ -57,7 +59,9 @@ export class KeycloakService {
           password: password,
         },
         {
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
         },
       );
 
@@ -73,17 +77,19 @@ export class KeycloakService {
       const response: AxiosResponse<AuthenticationResponse> = await axios.post(
         `${process.env.KEYCLOAK_SERVER_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`,
         {
-          grant_type: 'refresh-token',
+          grant_type: 'refresh_token',
           client_id: process.env.KEYCLOAK_CLIENT_ID,
           client_secret: process.env.KEYCLOAK_CLIENT_SECRET,
           username: process.env.KEYCLOAK_USERNAME,
           password: process.env.KEYCLOAK_PASSWORD,
+          refresh_token: this.refreshToken,
         },
         {
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
         },
       );
-
       this.accessToken = response.data.access_token;
       this.refreshToken = response.data.refresh_token;
       this.expiresIn = Date.now() + (response.data.expires_in - 60) * 1000;
@@ -93,9 +99,27 @@ export class KeycloakService {
     }
   }
 
+  async findUserById(userId: string) {
+    try {
+      const response: AxiosResponse<AuthenticationResponse> = await axios.get(
+        `${process.env.KEYCLOAK_SERVER_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/users/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${await this.getToken()}`,
+          },
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
   async getToken(): Promise<string> {
     try {
-      if (!this.refreshAdminToken || !this.accessToken) {
+      if (!this.refreshToken || !this.accessToken) {
         await this.authenticate();
       }
 
@@ -110,8 +134,9 @@ export class KeycloakService {
     }
   }
 
-  @Cron('*/4 8-20 * * 1-5')
+  @Cron('*/25 8-20 * * *')
   handleCron() {
-    console.log('Called schedule to refresh token');
+    this.refreshAdminToken();
+    console.log('Schedule to refresh token');
   }
 }
